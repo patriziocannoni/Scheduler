@@ -1,6 +1,3 @@
-/**
- * 
- */
 package br.com.cannoni.scheduler.config;
 
 import org.quartz.spi.TriggerFiredBundle;

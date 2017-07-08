@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<context:component-scan base-package="br.com.cannoni.scheduler"/>
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="jdbcDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="schedulerName" value="quartzScheduler"/>
+        <property name="autoStartup" value="true"/>
+        <property name="dataSource" ref="jdbcDataSource"/>
+        <property name="configLocation" value="classpath:quartz.properties"/>
+        <property name="jobFactory" ref="quartzJobFactory"/>
+        <property name="triggers" ref="triggers"/>
+    </bean>
+    
+    <bean id="quartzJobFactory" class="br.com.cannoni.scheduler.config.SchedulerJobFactory"/>
+    
+    <bean id="sampleJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="br.com.cannoni.scheduler.jobs.SampleJob"/>
+    </bean>
+    
+    <util:list id="triggers">
+        <bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+            <property name="name" value="sampleJobTrigger01"/>
+            <property name="repeatInterval" value="1000"/>
+            <property name="jobDetail" ref="sampleJobDetail"/>
+        </bean>
+    </util:list>
+</beans>
